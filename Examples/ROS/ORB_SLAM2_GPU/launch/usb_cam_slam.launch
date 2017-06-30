@@ -1,0 +1,8 @@
+<launch>
+
+  <arg name="setting_file" default="/home/nvidia/quemaofei/ORB_SLAM2/Examples/ROS/ORB_SLAM2/usb_cam.yaml" />
+  <arg name="voc_file"     default="/home/nvidia/quemaofei/ORB_SLAM2/Examples/ROS/ORB_SLAM2/voc/ORBvoc.txt" />
+  <node pkg="ORB_SLAM2_GPU" type="usb_mono" name="usb_mono" output="screen"
+   args="$(arg voc_file) $(arg setting_file)" />
+
+</launch>

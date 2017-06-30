@@ -1,0 +1,51 @@
+*.swp
+build/
+log/
+Examples/Monocular/mono_kitti
+Examples/Monocular/mono_tum
+Examples/RGB-D/rgbd_tum
+Examples/Stereo/stereo_kitti
+
+Examples/ROS/ORB_SLAM2_GPU/build
+Examples/ROS/ORB_SLAM2_GPU/Mono
+Examples/ROS/ORB_SLAM2_GPU/RGBD
+Examples/ROS/ORB_SLAM2_GPU/Stereo
+Examples/ROS/ORB_SLAM2_GPU/tx1
+Examples/ROS/ORB_SLAM2_GPU/stereo_zed
+Examples/ROS/ORB_SLAM2_GPU/usb_mono
+
+Thirdparty/DBoW2/build/
+Thirdparty/g2o/build/
+Thirdparty/g2o/config.h
+Vocabulary/ORBvoc.txt
+KeyFrameTrajectory.txt
+CameraTrajectory.txt
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app

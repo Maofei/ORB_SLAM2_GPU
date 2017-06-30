@@ -1,0 +1,198 @@
+cmake_minimum_required(VERSION 2.8)
+project(ORB_SLAM2)
+
+IF(NOT CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE Release)
+ENDIF()
+
+MESSAGE(STATUS "Build type: " ${CMAKE_BUILD_TYPE})
+
+set(CMAKE_C_FLAGS_DEBUG "-O2 -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-O2 -g")
+
+set(CMAKE_C_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
+LIST(APPEND CMAKE_C_FLAGS "-Wall -Wextra -DUSE_NVTX")
+LIST(APPEND CMAKE_CXX_FLAGS "-Wall -Wextra -DUSE_NVTX")
+
+find_package(CUDA QUIET REQUIRED)
+set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+SET(CUDA_HOST_COMPILER /usr/bin/g++)
+LIST(APPEND CUDA_NVCC_FLAGS "--compiler-options -fno-strict-aliasing -use_fast_math")
+
+# Check C++11 or C++0x support
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++11")
+   add_definitions(-DCOMPILEDWITHC11)
+   message(STATUS "Using flag -std=c++11.")
+elseif(COMPILER_SUPPORTS_CXX0X)
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+   set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -std=c++0x")
+   add_definitions(-DCOMPILEDWITHC0X)
+   message(STATUS "Using flag -std=c++0x.")
+else()
+   message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+endif()
+
+LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
+
+#find_package(OpenCV 3.1.0 REQUIRED
+#NO_MODULE
+#PATHS /usr/local
+#NO_DEFAULT_PATH)
+#if(NOT OpenCV_FOUND)
+#    message(FATAL_ERROR "OpenCV3.1.0 not found")
+#endif()
+
+find_package(Eigen3 3.1.0 REQUIRED)
+find_package(Pangolin REQUIRED)
+
+include_directories(
+    #/usr/local/include
+/opt/ros/kinetic/include/opencv-3.2.0-dev
+${PROJECT_SOURCE_DIR}
+${PROJECT_SOURCE_DIR}/include
+${EIGEN3_INCLUDE_DIR}
+${Pangolin_INCLUDE_DIRS}
+)
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+cuda_include_directories(
+  ${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc
+)
+
+cuda_add_library(${PROJECT_NAME} SHARED
+src/System.cc
+src/Tracking.cc
+src/LocalMapping.cc
+src/LoopClosing.cc
+src/ORBextractor.cc
+src/ORBmatcher.cc
+src/FrameDrawer.cc
+src/Converter.cc
+src/MapPoint.cc
+src/KeyFrame.cc
+src/Map.cc
+src/MapDrawer.cc
+src/Optimizer.cc
+src/PnPsolver.cc
+src/Frame.cc
+src/KeyFrameDatabase.cc
+src/Sim3Solver.cc
+src/Initializer.cc
+src/Viewer.cc
+src/cuda/Allocator_gpu.cu
+src/cuda/Fast_gpu.cu
+src/cuda/Orb_gpu.cu
+src/cuda/Cuda.cu
+)
+
+
+target_link_libraries(${PROJECT_NAME}
+/opt/ros/kinetic/lib/libopencv_aruco3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_bgsegm3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_bioinspired3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_calib3d.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_calib3d3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_ccalib3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_core.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_core3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudaarithm.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudabgsegm.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudacodec.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudafeatures2d.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudafilters.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudaimgproc.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudalegacy.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudaobjdetect.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudaoptflow.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudastereo.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudawarping.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cudev.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_cvv3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_datasets3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_dpm3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_face3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_features2d.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_features2d3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_flann.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_flann3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_fuzzy3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_hdf3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_highgui.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_highgui3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_imgcodecs.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_imgcodecs3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_imgproc.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_imgproc3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_line_descriptor3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_ml.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_ml3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_objdetect.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_objdetect3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_optflow3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_phase_unwrapping3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_photo.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_photo3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_plot3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_reg3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_rgbd3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_saliency3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_shape.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_shape3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_stereo3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_stitching.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_stitching3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_structured_light3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_superres.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_superres3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_surface_matching3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_text3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_video.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_video3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_videoio.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_videostab.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_videostab3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_viz.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_viz3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_xfeatures2d3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_ximgproc3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_xobjdetect3.so.3.2.0
+/opt/ros/kinetic/lib/libopencv_xphoto3.so.3.2.0
+    #${OpenCV3_LIBS}
+${EIGEN3_LIBS}
+${Pangolin_LIBRARIES}
+${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
+${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
+/usr/local/cuda-8.0/targets/aarch64-linux/lib/libnvToolsExt.so
+    #nvToolsExt
+)
+
+# Build examples
+if(NO_EXAMPLES)
+message(STATUS "Don't build examples")
+else ()
+message(STATUS "Build examples")
+
+add_executable(rgbd_tum Examples/RGB-D/rgbd_tum.cc)
+target_link_libraries(rgbd_tum ${PROJECT_NAME})
+
+add_executable(stereo_kitti Examples/Stereo/stereo_kitti.cc)
+target_link_libraries(stereo_kitti ${PROJECT_NAME})
+
+add_executable(mono_tum Examples/Monocular/mono_tum.cc)
+target_link_libraries(mono_tum ${PROJECT_NAME})
+
+add_executable(mono_kitti Examples/Monocular/mono_kitti.cc)
+target_link_libraries(mono_kitti ${PROJECT_NAME})
+
+endif() # Build Examples
+
+unset(CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+add_subdirectory(gpu)

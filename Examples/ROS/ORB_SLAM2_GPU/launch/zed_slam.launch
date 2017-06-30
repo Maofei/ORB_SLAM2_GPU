@@ -1,0 +1,10 @@
+<launch>
+
+
+  <arg name="setting_file" default="/home/nvidia/quemaofei/ORB_SLAM2/Examples/ROS/ORB_SLAM2/zed.yaml" />
+  <arg name="voc_file"     default="/home/nvidia/quemaofei/ORB_SLAM2/Examples/ROS/ORB_SLAM2/voc/ORBvoc.txt" />
+  <arg name="do_rectify"   default="false" />
+  <node pkg="ORB_SLAM2" type="stereo_zed" name="stereo_zed" output="screen"
+   args="$(arg voc_file) $(arg setting_file) $(arg do_rectify)" />
+
+</launch>
