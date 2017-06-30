@@ -22,8 +22,8 @@
 #ifndef TRACKING_H
 #define TRACKING_H
 
-#include<opencv2/core/core.hpp>
-#include<opencv2/features2d/features2d.hpp>
+#include <opencv2/core/core.hpp>
+#include <opencv2/features2d/features2d.hpp>
 
 #include "Viewer.h"
 #include "FrameDrawer.h"
@@ -79,11 +79,11 @@ public:
 
     // Tracking states
     enum eTrackingState{
-        SYSTEM_NOT_READY=-1,
-        NO_IMAGES_YET=0,
-        NOT_INITIALIZED=1,
-        OK=2,
-        LOST=3
+        SYSTEM_NOT_READY = -1,
+        NO_IMAGES_YET    = 0,
+        NOT_INITIALIZED  = 1,
+        OK               = 2,
+        LOST             = 3
     };
 
     eTrackingState mState;
