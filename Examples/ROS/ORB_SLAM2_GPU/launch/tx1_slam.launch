@@ -1,6 +1,6 @@
 <launch>
 
-  <arg name="setting_file" default="/home/nvidia/quemaofei/ORB-SLAM2-GPU2016-final/gpu/TX1.yaml" />
+  <arg name="setting_file" default="/home/nvidia/quemaofei/ORB_SLAM2_GPU/gpu/TX1.yaml" />
   <arg name="voc_file"     default="/home/nvidia/quemaofei/ORB_SLAM2/Examples/ROS/ORB_SLAM2/voc/ORBvoc.txt" />
   <node pkg="ORB_SLAM2_GPU" type="tx1" name="tx1" output="screen"
    args="$(arg voc_file) $(arg setting_file)" />

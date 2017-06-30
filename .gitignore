@@ -11,7 +11,7 @@ Examples/ROS/ORB_SLAM2_GPU/Mono
 Examples/ROS/ORB_SLAM2_GPU/RGBD
 Examples/ROS/ORB_SLAM2_GPU/Stereo
 Examples/ROS/ORB_SLAM2_GPU/tx1
-Examples/ROS/ORB_SLAM2_GPU/stereo_zed
+Examples/ROS/ORB_SLAM2_GPU/zed_stereo
 Examples/ROS/ORB_SLAM2_GPU/usb_mono
 
 Thirdparty/DBoW2/build/

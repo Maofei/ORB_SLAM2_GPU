@@ -29,11 +29,11 @@
 namespace ORB_SLAM2
 {
 
-System::System(const string &strVocFile, 
-               const string &strSettingsFile, 
+System::System(const string &strVocFile,
+               const string &strSettingsFile,
                const eSensor sensor,
                const bool bUseViewer)
-  : mSensor(sensor), mbReset(false), 
+  : mSensor(sensor), mbReset(false),
     mbActivateLocalizationMode(false),
     mbDeactivateLocalizationMode(false)
 {
@@ -65,6 +65,7 @@ System::System(const string &strVocFile,
     cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
 
     mpVocabulary = new ORBVocabulary();
+    // TODO: add save and load from binary
     bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
     if(!bVocLoad)
     {
@@ -121,7 +122,7 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     {
         cerr << "ERROR: you called TrackStereo but input sensor was not set to STEREO." << endl;
         exit(-1);
-    }   
+    }
 
     // Check mode change
     {
@@ -166,7 +167,7 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
     {
         cerr << "ERROR: you called TrackRGBD but input sensor was not set to RGBD." << endl;
         exit(-1);
-    }    
+    }
 
     // Check mode change
     {
@@ -275,9 +276,9 @@ void System::Shutdown()
     mpViewer->RequestFinish();
 
     // Wait until all thread have effectively stopped
-    while(!mpLocalMapper->isFinished() 
-        || !mpLoopCloser->isFinished()  
-        || !mpViewer->isFinished()      
+    while(!mpLocalMapper->isFinished()
+        || !mpLoopCloser->isFinished()
+        || !mpViewer->isFinished()
         || mpLoopCloser->isRunningGBA())
     {
         usleep(5000);
@@ -343,8 +344,8 @@ void System::SaveTrajectoryTUM(const string &filename)
 
         vector<float> q = Converter::toQuaternion(Rwc);
 
-        f << setprecision(6) << *lT << " " <<  setprecision(9) << twc.at<float>(0) 
-          << " " << twc.at<float>(1) << " " << twc.at<float>(2) 
+        f << setprecision(6) << *lT << " " <<  setprecision(9) << twc.at<float>(0)
+          << " " << twc.at<float>(1) << " " << twc.at<float>(2)
           << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
     }
     f.close();
@@ -379,7 +380,7 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
         cv::Mat R = pKF->GetRotation().t();
         vector<float> q = Converter::toQuaternion(R);
         cv::Mat t = pKF->GetCameraCenter();
-        f << setprecision(6) << pKF->mTimeStamp << setprecision(7) 
+        f << setprecision(6) << pKF->mTimeStamp << setprecision(7)
           << " " << t.at<float>(0) << " " << t.at<float>(1) << " " << t.at<float>(2)
           << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
 
@@ -412,7 +413,7 @@ void System::SaveTrajectoryKITTI(const string &filename)
     // which is true when tracking failed (lbL).
     list<ORB_SLAM2::KeyFrame*>::iterator lRit = mpTracker->mlpReferences.begin();
     list<double>::iterator lT = mpTracker->mlFrameTimes.begin();
-    for(list<cv::Mat>::iterator lit=mpTracker->mlRelativeFramePoses.begin(), 
+    for(list<cv::Mat>::iterator lit=mpTracker->mlRelativeFramePoses.begin(),
         lend=mpTracker->mlRelativeFramePoses.end();
         lit!=lend;
         lit++, lRit++, lT++)
@@ -434,10 +435,10 @@ void System::SaveTrajectoryKITTI(const string &filename)
         cv::Mat Rwc = Tcw.rowRange(0,3).colRange(0,3).t();
         cv::Mat twc = -Rwc * Tcw.rowRange(0,3).col(3);
 
-        f << setprecision(9) << Rwc.at<float>(0,0) << " " << Rwc.at<float>(0,1)  
-          << " " << Rwc.at<float>(0,2) << " "  << twc.at<float>(0) 
-          << " " << Rwc.at<float>(1,0) << " " << Rwc.at<float>(1,1)  << " " << Rwc.at<float>(1,2) 
-          << " " << twc.at<float>(1) << " " << Rwc.at<float>(2,0) << " " << Rwc.at<float>(2,1)  
+        f << setprecision(9) << Rwc.at<float>(0,0) << " " << Rwc.at<float>(0,1)
+          << " " << Rwc.at<float>(0,2) << " "  << twc.at<float>(0)
+          << " " << Rwc.at<float>(1,0) << " " << Rwc.at<float>(1,1)  << " " << Rwc.at<float>(1,2)
+          << " " << twc.at<float>(1) << " " << Rwc.at<float>(2,0) << " " << Rwc.at<float>(2,1)
           << " " << Rwc.at<float>(2,2) << " "  << twc.at<float>(2) << endl;
     }
     f.close();
