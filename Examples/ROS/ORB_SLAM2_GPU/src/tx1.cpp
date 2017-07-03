@@ -54,9 +54,6 @@ int main(int argc, char **argv)
 
     //double ttl = atof(argv[3]);
 
-    double tsum = 0;
-    double tbuf[10] = {0.0};
-    int tpos = 0;
     double trackTimeSum = 0.0;
     // Main loop
     cv::Mat im;
@@ -78,11 +75,8 @@ int main(int argc, char **argv)
 
       double trackTime = TIME_DIFF(t2, t1);
       trackTimeSum += trackTime;
-      tsum = tframe - tbuf[tpos];
-      tbuf[tpos] = tframe;
-      tpos = (tpos + 1) % 10;
       cout << "Frame Number" << frameNumber << " : Frame Time: " << tframe
-           << " Track Time: " << trackTime << " " << 10 / tsum << "\n";
+           << " Track Time: " << trackTime << "\n";
       ++frameNumber;
       ros::spinOnce();
       r.sleep();

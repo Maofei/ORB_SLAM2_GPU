@@ -66,7 +66,8 @@ System::System(const string &strVocFile,
 
     mpVocabulary = new ORBVocabulary();
     // TODO: add save and load from binary
-    bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+    //bool bVocLoad = mpVocabulary->loadFromTextFile(strVocFile);
+    bool bVocLoad = mpVocabulary->loadFromBinaryFile(strVocFile);
     if(!bVocLoad)
     {
         cerr << "Wrong path to vocabulary. " << endl;
@@ -74,6 +75,9 @@ System::System(const string &strVocFile,
         exit(-1);
     }
     cout << "Vocabulary loaded!" << endl << endl;
+
+    //const std::string binfile = strVocFile + ".bin";
+    //mpVocabulary->saveToBinaryFile(binfile);
 
     //Create KeyFrame Database
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
