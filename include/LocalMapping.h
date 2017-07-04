@@ -105,12 +105,12 @@ protected:
     Tracking* mpTracker;
 
     std::list<KeyFrame*> mlNewKeyFrames;
+    std::mutex mMutexNewKFs;
 
     KeyFrame* mpCurrentKeyFrame;
 
     std::list<MapPoint*> mlpRecentAddedMapPoints;
 
-    std::mutex mMutexNewKFs;
 
     bool mbAbortBA;
 

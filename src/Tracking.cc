@@ -42,10 +42,26 @@ using namespace std;
 namespace ORB_SLAM2
 {
 
-Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, Map *pMap, KeyFrameDatabase* pKFDB, const string &strSettingPath, const int sensor) :
-    mState(NO_IMAGES_YET), mSensor(sensor), mbOnlyTracking(false), mbVO(false), mpORBVocabulary(pVoc),
-    mpKeyFrameDB(pKFDB), mpInitializer(static_cast<Initializer*>(NULL)), mpSystem(pSys),
-    mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
+Tracking::Tracking(System *pSys, 
+                   ORBVocabulary* pVoc, 
+                   FrameDrawer *pFrameDrawer, 
+                   MapDrawer *pMapDrawer, 
+                   Map *pMap, 
+                   KeyFrameDatabase* pKFDB, 
+                   const string &strSettingPath, 
+                   const int sensor) :
+    mState(NO_IMAGES_YET), 
+    mSensor(sensor), 
+    mbOnlyTracking(false), 
+    mbVO(false), 
+    mpORBVocabulary(pVoc),
+    mpKeyFrameDB(pKFDB), 
+    mpInitializer(static_cast<Initializer*>(NULL)), 
+    mpSystem(pSys),
+    mpFrameDrawer(pFrameDrawer), 
+    mpMapDrawer(pMapDrawer), 
+    mpMap(pMap), 
+    mnLastRelocFrameId(0)
 {
     // Load camera parameters from settings file
 
@@ -55,6 +71,9 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     float cx = fSettings["Camera.cx"];
     float cy = fSettings["Camera.cy"];
 
+    //     |fx  0   cx|
+    // K = |0   fy  cy|
+    //     |0   0   1 |
     cv::Mat K = cv::Mat::eye(3,3,CV_32F);
     K.at<float>(0,0) = fx;
     K.at<float>(1,1) = fy;
@@ -78,8 +97,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mbf = fSettings["Camera.bf"];
 
     float fps = fSettings["Camera.fps"];
-    if(fps==0)
-        fps=30;
+    if(fps == 0)
+        fps = 30;
 
     // Max/Min Frames to insert keyframes and to check relocalisation
     mMinFrames = 0;
@@ -121,6 +140,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         mpORBextractorRight = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
     if(sensor==System::MONOCULAR)
+        // two times more features extracted!
         mpIniORBextractor = new ORBextractor(2*nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
     cout << endl  << "ORB Extractor Parameters: " << endl;
@@ -149,21 +169,23 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
 {
-    mpLocalMapper=pLocalMapper;
+    mpLocalMapper = pLocalMapper;
 }
 
 void Tracking::SetLoopClosing(LoopClosing *pLoopClosing)
 {
-    mpLoopClosing=pLoopClosing;
+    mpLoopClosing = pLoopClosing;
 }
 
 void Tracking::SetViewer(Viewer *pViewer)
 {
-    mpViewer=pViewer;
+    mpViewer = pViewer;
 }
 
 
-cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRectRight, const double &timestamp)
+cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, 
+                                  const cv::Mat &imRectRight, 
+                                  const double &timestamp)
 {
     mImGray = imRectLeft;
     cv::Mat imGrayRight = imRectRight;
@@ -172,30 +194,32 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
     {
         if(mbRGB)
         {
-            cvtColor(mImGray,mImGray,CV_RGB2GRAY);
-            cvtColor(imGrayRight,imGrayRight,CV_RGB2GRAY);
+            cvtColor(mImGray, mImGray, CV_RGB2GRAY);
+            cvtColor(imGrayRight, imGrayRight, CV_RGB2GRAY);
         }
         else
         {
-            cvtColor(mImGray,mImGray,CV_BGR2GRAY);
-            cvtColor(imGrayRight,imGrayRight,CV_BGR2GRAY);
+            cvtColor(mImGray, mImGray, CV_BGR2GRAY);
+            cvtColor(imGrayRight, imGrayRight, CV_BGR2GRAY);
         }
     }
     else if(mImGray.channels()==4)
     {
         if(mbRGB)
         {
-            cvtColor(mImGray,mImGray,CV_RGBA2GRAY);
-            cvtColor(imGrayRight,imGrayRight,CV_RGBA2GRAY);
+            cvtColor(mImGray, mImGray, CV_RGBA2GRAY);
+            cvtColor(imGrayRight, imGrayRight, CV_RGBA2GRAY);
         }
         else
         {
-            cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
-            cvtColor(imGrayRight,imGrayRight,CV_BGRA2GRAY);
+            cvtColor(mImGray, mImGray, CV_BGRA2GRAY);
+            cvtColor(imGrayRight, imGrayRight, CV_BGRA2GRAY);
         }
     }
 
-    mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+    mCurrentFrame = Frame(mImGray, imGrayRight, timestamp,
+                          mpORBextractorLeft, mpORBextractorRight,
+                          mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
 
     Track();
 
@@ -211,30 +235,36 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     if(mImGray.channels()==3)
     {
         if(mbRGB)
-            cvtColor(mImGray,mImGray,CV_RGB2GRAY);
+            cvtColor(mImGray, mImGray, CV_RGB2GRAY);
         else
-            cvtColor(mImGray,mImGray,CV_BGR2GRAY);
+            cvtColor(mImGray, mImGray, CV_BGR2GRAY);
     }
     else if(mImGray.channels()==4)
     {
         if(mbRGB)
-            cvtColor(mImGray,mImGray,CV_RGBA2GRAY);
+            cvtColor(mImGray, mImGray, CV_RGBA2GRAY);
         else
-            cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
+            cvtColor(mImGray, mImGray, CV_BGRA2GRAY);
     }
 
     if(mDepthMapFactor!=1 || imDepth.type()!=CV_32F) {
-      imDepth.convertTo(imDepth,CV_32F,mDepthMapFactor);
+      imDepth.convertTo(imDepth, CV_32F, mDepthMapFactor);
     }
 
-    mCurrentFrame = Frame(mImGray,imDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+    mCurrentFrame = Frame(mImGray, imDepth, timestamp,
+                          mpORBextractorLeft,
+                          mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
 
     Track();
 
     return mCurrentFrame.mTcw.clone();
 }
 
-
+/*
+1. get image and convert to gray
+2. construct CurrentFrame
+3. do Track()
+*/
 cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 {
     mImGray = im;
@@ -242,42 +272,55 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
     if(mImGray.channels()==3)
     {
         if(mbRGB)
-            cvtColor(mImGray,mImGray,CV_RGB2GRAY);
+            cvtColor(mImGray, mImGray, CV_RGB2GRAY);
         else
-            cvtColor(mImGray,mImGray,CV_BGR2GRAY);
+            cvtColor(mImGray, mImGray, CV_BGR2GRAY);
     }
     else if(mImGray.channels()==4)
     {
         if(mbRGB)
-            cvtColor(mImGray,mImGray,CV_RGBA2GRAY);
+            cvtColor(mImGray, mImGray, CV_RGBA2GRAY);
         else
-            cvtColor(mImGray,mImGray,CV_BGRA2GRAY);
+            cvtColor(mImGray, mImGray, CV_BGRA2GRAY);
     }
 
     if(mState==NOT_INITIALIZED || mState==NO_IMAGES_YET)
-        mCurrentFrame = Frame(mImGray,timestamp,mpIniORBextractor,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+        mCurrentFrame = Frame(mImGray, timestamp,
+                              mpIniORBextractor,
+                              mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
     else
-        mCurrentFrame = Frame(mImGray,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+        mCurrentFrame = Frame(mImGray, timestamp, 
+                              mpORBextractorLeft,
+                              mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
 
     Track();
 
     return mCurrentFrame.mTcw.clone();
 }
 
+/*
+@brief Main tracking function. It is independent of the input sensor.
+    1. Initialization
+    2. Tracking(camera pose estimation)
+    3. Track the local map
+    4. Whether to insert a KF
+    5. Isert new KF
+*/
 void Tracking::Track()
 {
     PUSH_RANGE("Tracking::Track()", 2);
-    if(mState==NO_IMAGES_YET)
+    if(mState == NO_IMAGES_YET)
     {
         mState = NOT_INITIALIZED;
     }
+    // keep the newest state for FrameDrawer
+    mLastProcessedState = mState;
 
-    mLastProcessedState=mState;
-
-    // Get Map Mutex -> Map cannot be changed
+    // Get Map Mutex so Map cannot be changed
     unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
 
-    if(mState==NOT_INITIALIZED)
+    // =======================   STEP 1 : Initialization
+    if(mState == NOT_INITIALIZED)
     {
         if(mSensor==System::STEREO || mSensor==System::RGBD)
             StereoInitialization();
@@ -286,11 +329,12 @@ void Tracking::Track()
 
         mpFrameDrawer->Update(this);
 
-        if(mState!=OK)
+        if(mState != OK)
             return;
     }
     else
     {
+        // =======================   STEP2 : Tracking
         // System is initialized. Track Frame.
         bool bOK;
 
@@ -300,17 +344,22 @@ void Tracking::Track()
             // Local Mapping is activated. This is the normal behaviour, unless
             // you explicitly activate the "only tracking" mode.
 
-            if(mState==OK)
+            if(mState == OK)
             {
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
-                if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
+                if(mVelocity.empty() 
+                    || mCurrentFrame.mnId < mnLastRelocFrameId + 2) //?
                 {
+                    // Use lastFrame Pose as inital Pose for optimization
+                    // get match pairs between ReferenceFrame and CurrentFrame by SearchByBoW
                     bOK = TrackReferenceKeyFrame();
                 }
                 else
                 {
+                    // Set inital pose for currentFrame by Motion model
+                    // get match pairs between ReferenceFrame and CurrentFrame by SearchByProjection
                     bOK = TrackWithMotionModel();
                     if(!bOK)
                         bOK = TrackReferenceKeyFrame();
@@ -318,6 +367,7 @@ void Tracking::Track()
             }
             else
             {
+                // BoW search, solve Pose by PnP
                 bOK = Relocalization();
             }
         }
@@ -325,12 +375,13 @@ void Tracking::Track()
         {
             // Only Tracking: Local Mapping is deactivated
 
-            if(mState==LOST)
+            if(mState == LOST)
             {
                 bOK = Relocalization();
             }
             else
             {
+                // mbVO true means that there are few matches to MapPoints in the map.
                 if(!mbVO)
                 {
                     // In last frame we tracked enough MapPoints in the map
@@ -346,17 +397,20 @@ void Tracking::Track()
                 }
                 else
                 {
-                    // In last frame we tracked mainly "visual odometry" points.
+                    // In last frame we tracked mainly "visual odometry" points, no much matched MapPoints
 
-                    // We compute two camera poses, one from motion model and one doing relocalization.
-                    // If relocalization is sucessfull we choose that solution, otherwise we retain
-                    // the "visual odometry" solution.
+                    // We compute two camera poses, 
+                    // one from motion model and one doing relocalization.
+                    // If relocalization is sucessfull we choose that solution, 
+                    // otherwise we retain the "visual odometry" solution.
 
                     bool bOKMM = false;
                     bool bOKReloc = false;
+
                     vector<MapPoint*> vpMPsMM;
                     vector<bool> vbOutMM;
                     cv::Mat TcwMM;
+
                     if(!mVelocity.empty())
                     {
                         bOKMM = TrackWithMotionModel();
@@ -383,6 +437,7 @@ void Tracking::Track()
                             }
                         }
                     }
+                    // We trust Relocalization more!
                     else if(bOKReloc)
                     {
                         mbVO = false;
@@ -395,6 +450,7 @@ void Tracking::Track()
 
         mCurrentFrame.mpReferenceKF = mpReferenceKF;
 
+        // =======================   STEP3: Track the local map
         // If we have an initial estimation of the camera pose and matching. Track the local map.
         if(!mbOnlyTracking)
         {
@@ -413,11 +469,12 @@ void Tracking::Track()
         if(bOK)
             mState = OK;
         else
-            mState=LOST;
+            mState = LOST;
 
         // Update drawer
         mpFrameDrawer->Update(this);
 
+        // =======================   STEP4: Whether to insert a KF
         // If tracking were good, check if we insert a keyframe
         if(bOK)
         {
@@ -427,7 +484,7 @@ void Tracking::Track()
                 cv::Mat LastTwc = cv::Mat::eye(4,4,CV_32F);
                 mLastFrame.GetRotationInverse().copyTo(LastTwc.rowRange(0,3).colRange(0,3));
                 mLastFrame.GetCameraCenter().copyTo(LastTwc.rowRange(0,3).col(3));
-                mVelocity = mCurrentFrame.mTcw*LastTwc;
+                mVelocity = mCurrentFrame.mTcw * LastTwc;
             }
             else
                 mVelocity = cv::Mat();
@@ -439,15 +496,18 @@ void Tracking::Track()
             {
                 MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
                 if(pMP)
-                    if(pMP->Observations()<1)
+                    if(pMP->Observations() < 1)
                     {
                         mCurrentFrame.mvbOutlier[i] = false;
-                        mCurrentFrame.mvpMapPoints[i]=static_cast<MapPoint*>(NULL);
+                        mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
                     }
             }
 
             // Delete temporal MapPoints
-            for(list<MapPoint*>::iterator lit = mlpTemporalPoints.begin(), lend =  mlpTemporalPoints.end(); lit!=lend; lit++)
+            for(list<MapPoint*>::iterator lit = mlpTemporalPoints.begin(), 
+                lend =  mlpTemporalPoints.end(); 
+                lit!=lend; 
+                lit++)
             {
                 MapPoint* pMP = *lit;
                 delete pMP;
@@ -456,28 +516,26 @@ void Tracking::Track()
 
             // Check if we need to insert a new keyframe
             if(NeedNewKeyFrame())
+                // =======================   STEP5: create new keyFrame 
                 CreateNewKeyFrame();
 
             // We allow points with high innovation (considererd outliers by the Huber Function)
             // pass to the new keyframe, so that bundle adjustment will finally decide
             // if they are outliers or not. We don't want next frame to estimate its position
             // with those points so we discard them in the frame.
-            for(int i=0; i<mCurrentFrame.N;i++)
+            for(int i=0; i<mCurrentFrame.N; i++)
             {
                 if(mCurrentFrame.mvpMapPoints[i] && mCurrentFrame.mvbOutlier[i])
-                    mCurrentFrame.mvpMapPoints[i]=static_cast<MapPoint*>(NULL);
+                    mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
             }
         }
 
         // Reset if the camera get lost soon after initialization
-        if(mState==LOST)
+        if(mState == LOST && mpMap->KeyFramesInMap()<=5)
         {
-            if(mpMap->KeyFramesInMap()<=5)
-            {
-                cout << "Track lost soon after initialisation, reseting..." << endl;
-                mpSystem->Reset();
-                return;
-            }
+            cout << "Track lost soon after initialisation, reseting..." << endl;
+            mpSystem->Reset();
+            return;
         }
 
         if(!mCurrentFrame.mpReferenceKF)
@@ -489,11 +547,11 @@ void Tracking::Track()
     // Store frame pose information to retrieve the complete camera trajectory afterwards.
     if(!mCurrentFrame.mTcw.empty())
     {
-        cv::Mat Tcr = mCurrentFrame.mTcw*mCurrentFrame.mpReferenceKF->GetPoseInverse();
+        cv::Mat Tcr = mCurrentFrame.mTcw * mCurrentFrame.mpReferenceKF->GetPoseInverse();
         mlRelativeFramePoses.push_back(Tcr);
         mlpReferences.push_back(mpReferenceKF);
         mlFrameTimes.push_back(mCurrentFrame.mTimeStamp);
-        mlbLost.push_back(mState==LOST);
+        mlbLost.push_back(mState == LOST);
     }
     else
     {
@@ -501,7 +559,7 @@ void Tracking::Track()
         mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
         mlpReferences.push_back(mlpReferences.back());
         mlFrameTimes.push_back(mlFrameTimes.back());
-        mlbLost.push_back(mState==LOST);
+        mlbLost.push_back(mState == LOST);
     }
 
     POP_RANGE;
@@ -562,26 +620,32 @@ void Tracking::StereoInitialization()
     }
 }
 
+/*
+STEP 1(Inital): Mono init
+*/
 void Tracking::MonocularInitialization()
 {
 
     if(!mpInitializer)
     {
         // Set Reference Frame
+        // mvKeys is the key points in the frame
+        // for inital frame the key points should > 100
         if(mCurrentFrame.mvKeys.size()>100)
         {
             mInitialFrame = Frame(mCurrentFrame);
             mLastFrame = Frame(mCurrentFrame);
             mvbPrevMatched.resize(mCurrentFrame.mvKeysUn.size());
-            for(size_t i=0; i<mCurrentFrame.mvKeysUn.size(); i++)
-                mvbPrevMatched[i]=mCurrentFrame.mvKeysUn[i].pt;
+
+            for(size_t i=0; i < mCurrentFrame.mvKeysUn.size(); i++)
+                mvbPrevMatched[i] = mCurrentFrame.mvKeysUn[i].pt;
 
             if(mpInitializer)
                 delete mpInitializer;
 
-            mpInitializer =  new Initializer(mCurrentFrame,1.0,200);
+            mpInitializer =  new Initializer(mCurrentFrame, 1.0, 200);
 
-            fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
+            fill(mvIniMatches.begin(), mvIniMatches.end(), -1);
 
             return;
         }
@@ -589,17 +653,24 @@ void Tracking::MonocularInitialization()
     else
     {
         // Try to initialize
-        if((int)mCurrentFrame.mvKeys.size()<=100)
+        // The second frame needs to have more than 100 keypoints as well for initalization
+        if((int)mCurrentFrame.mvKeys.size() <= 100)
         {
             delete mpInitializer;
             mpInitializer = static_cast<Initializer*>(NULL);
-            fill(mvIniMatches.begin(),mvIniMatches.end(),-1);
+            fill(mvIniMatches.begin(), mvIniMatches.end(), -1);
             return;
         }
 
         // Find correspondences
-        ORBmatcher matcher(0.9,true);
-        int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
+        // find keypoint pairs between mInitialFrame and mCurrentFrame 
+        // save idx at currentframe in mvIniMatches
+        ORBmatcher matcher(0.9, true);
+        int nmatches = matcher.SearchForInitialization(mInitialFrame,
+                                                       mCurrentFrame,
+                                                       mvbPrevMatched,
+                                                       mvIniMatches,
+                                                       100);
 
         // Check if there are enough correspondences
         if(nmatches<100)
@@ -613,8 +684,13 @@ void Tracking::MonocularInitialization()
         cv::Mat tcw; // Current Camera Translation
         vector<bool> vbTriangulated; // Triangulated Correspondences (mvIniMatches)
 
-        if(mpInitializer->Initialize(mCurrentFrame, mvIniMatches, Rcw, tcw, mvIniP3D, vbTriangulated))
+        // mono init with H or F model
+        // get camera rotation and translation between two frames
+        // get 3D cv::Point3f in mvIniP3D to save point world position
+        if(mpInitializer->Initialize(mCurrentFrame, mvIniMatches, 
+                                     Rcw, tcw, mvIniP3D, vbTriangulated))
         {
+            //get rid of match point pairs that cannot triangulate
             for(size_t i=0, iend=mvIniMatches.size(); i<iend;i++)
             {
                 if(mvIniMatches[i]>=0 && !vbTriangulated[i])
@@ -625,24 +701,31 @@ void Tracking::MonocularInitialization()
             }
 
             // Set Frame Poses
+            // set the first inital frame as world frame
             mInitialFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
+
+            // Tcw is the matrix from world frame to current frame
             cv::Mat Tcw = cv::Mat::eye(4,4,CV_32F);
             Rcw.copyTo(Tcw.rowRange(0,3).colRange(0,3));
             tcw.copyTo(Tcw.rowRange(0,3).col(3));
             mCurrentFrame.SetPose(Tcw);
-
+            
+            // create MapPoints and associate to KeyFrames and initalize Map
             CreateInitialMapMonocular();
         }
     }
 }
 
+/*
+STEP 1(Inital): create MapPoints and associate to KeyFrames and initalize Map
+*/
 void Tracking::CreateInitialMapMonocular()
 {
     // Create KeyFrames
-    KeyFrame* pKFini = new KeyFrame(mInitialFrame,mpMap,mpKeyFrameDB);
-    KeyFrame* pKFcur = new KeyFrame(mCurrentFrame,mpMap,mpKeyFrameDB);
+    KeyFrame* pKFini = new KeyFrame(mInitialFrame, mpMap, mpKeyFrameDB);
+    KeyFrame* pKFcur = new KeyFrame(mCurrentFrame, mpMap, mpKeyFrameDB);
 
-
+    // change frame descriptor to Bow
     pKFini->ComputeBoW();
     pKFcur->ComputeBoW();
 
@@ -651,21 +734,21 @@ void Tracking::CreateInitialMapMonocular()
     mpMap->AddKeyFrame(pKFcur);
 
     // Create MapPoints and asscoiate to keyframes
-    for(size_t i=0; i<mvIniMatches.size();i++)
+    for(size_t i=0; i<mvIniMatches.size(); i++)
     {
         if(mvIniMatches[i]<0)
             continue;
 
         //Create MapPoint.
         cv::Mat worldPos(mvIniP3D[i]);
+        // construct MapPoint by 3D point
+        MapPoint* pMP = new MapPoint(worldPos, pKFcur, mpMap);
 
-        MapPoint* pMP = new MapPoint(worldPos,pKFcur,mpMap);
+        pKFini->AddMapPoint(pMP, i);
+        pKFcur->AddMapPoint(pMP, mvIniMatches[i]);
 
-        pKFini->AddMapPoint(pMP,i);
-        pKFcur->AddMapPoint(pMP,mvIniMatches[i]);
-
-        pMP->AddObservation(pKFini,i);
-        pMP->AddObservation(pKFcur,mvIniMatches[i]);
+        pMP->AddObservation(pKFini, i);
+        pMP->AddObservation(pKFcur, mvIniMatches[i]);
 
         pMP->ComputeDistinctiveDescriptors();
         pMP->UpdateNormalAndDepth();
@@ -684,8 +767,7 @@ void Tracking::CreateInitialMapMonocular()
 
     // Bundle Adjustment
     cout << "New Map created with " << mpMap->MapPointsInMap() << " points" << endl;
-
-    Optimizer::GlobalBundleAdjustemnt(mpMap,20);
+    Optimizer::GlobalBundleAdjustemnt(mpMap, 20);
 
     // Set median depth to 1
     float medianDepth = pKFini->ComputeSceneMedianDepth(2);
@@ -698,19 +780,19 @@ void Tracking::CreateInitialMapMonocular()
         return;
     }
 
-    // Scale initial baseline
+    // Scale CurrentFrame with InitialFrame baseline
     cv::Mat Tc2w = pKFcur->GetPose();
-    Tc2w.col(3).rowRange(0,3) = Tc2w.col(3).rowRange(0,3)*invMedianDepth;
+    Tc2w.col(3).rowRange(0,3) = Tc2w.col(3).rowRange(0,3) * invMedianDepth;
     pKFcur->SetPose(Tc2w);
 
-    // Scale points
+    // Scale MapPoints in InitialFrame
     vector<MapPoint*> vpAllMapPoints = pKFini->GetMapPointMatches();
     for(size_t iMP=0; iMP<vpAllMapPoints.size(); iMP++)
     {
         if(vpAllMapPoints[iMP])
         {
             MapPoint* pMP = vpAllMapPoints[iMP];
-            pMP->SetWorldPos(pMP->GetWorldPos()*invMedianDepth);
+            pMP->SetWorldPos(pMP->GetWorldPos() * invMedianDepth);
         }
     }
 
@@ -718,12 +800,13 @@ void Tracking::CreateInitialMapMonocular()
     mpLocalMapper->InsertKeyFrame(pKFcur);
 
     mCurrentFrame.SetPose(pKFcur->GetPose());
-    mnLastKeyFrameId=mCurrentFrame.mnId;
+    mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKFcur;
 
     mvpLocalKeyFrames.push_back(pKFcur);
     mvpLocalKeyFrames.push_back(pKFini);
-    mvpLocalMapPoints=mpMap->GetAllMapPoints();
+
+    mvpLocalMapPoints = mpMap->GetAllMapPoints();
     mpReferenceKF = pKFcur;
     mCurrentFrame.mpReferenceKF = pKFcur;
 
@@ -735,9 +818,12 @@ void Tracking::CreateInitialMapMonocular()
 
     mpMap->mvpKeyFrameOrigins.push_back(pKFini);
 
-    mState=OK;
+    mState = OK; // Initailization Done
 }
 
+/*
+STEP 2(tracking)
+*/
 void Tracking::CheckReplacedInLastFrame()
 {
     for(int i =0; i<mLastFrame.N; i++)
@@ -755,7 +841,9 @@ void Tracking::CheckReplacedInLastFrame()
     }
 }
 
-
+/*
+STEP 2(tracking)
+*/
 bool Tracking::TrackReferenceKeyFrame()
 {
     // Compute Bag of Words vector
@@ -763,20 +851,27 @@ bool Tracking::TrackReferenceKeyFrame()
 
     // We perform first an ORB matching with the reference keyframe
     // If enough matches are found we setup a PnP solver
-    ORBmatcher matcher(0.7,true);
+    ORBmatcher matcher(0.7, true);
     vector<MapPoint*> vpMapPointMatches;
 
-    int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
+    // match keyPoints in CurrentFrame and ReferenceKF
+    // @param  vpMapPointMatches:  matched MapPoints in CurrentFrame
+    // @return: successfully matched number
+    int nmatches = matcher.SearchByBoW(mpReferenceKF,
+                                       mCurrentFrame,
+                                       vpMapPointMatches);
 
-    if(nmatches<15)
+    if(nmatches < 15)
         return false;
 
+    // use lastFrame pose as inital
     mCurrentFrame.mvpMapPoints = vpMapPointMatches;
     mCurrentFrame.SetPose(mLastFrame.mTcw);
 
+    // optimize 3D-2D 
     Optimizer::PoseOptimization(&mCurrentFrame);
 
-    // Discard outliers
+    // Discard outliers after optimization
     int nmatchesMap = 0;
     for(int i =0; i<mCurrentFrame.N; i++)
     {
@@ -786,18 +881,18 @@ bool Tracking::TrackReferenceKeyFrame()
             {
                 MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
 
-                mCurrentFrame.mvpMapPoints[i]=static_cast<MapPoint*>(NULL);
-                mCurrentFrame.mvbOutlier[i]=false;
+                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+                mCurrentFrame.mvbOutlier[i] = false;
                 pMP->mbTrackInView = false;
                 pMP->mnLastFrameSeen = mCurrentFrame.mnId;
                 nmatches--;
             }
-            else if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
+            else if(mCurrentFrame.mvpMapPoints[i]->Observations() > 0)
                 nmatchesMap++;
         }
     }
 
-    return nmatchesMap>=10;
+    return nmatchesMap >= 10;
 }
 
 void Tracking::UpdateLastFrame()
@@ -806,16 +901,20 @@ void Tracking::UpdateLastFrame()
     KeyFrame* pRef = mLastFrame.mpReferenceKF;
     cv::Mat Tlr = mlRelativeFramePoses.back();
 
-    mLastFrame.SetPose(Tlr*pRef->GetPose());
+    // Tlr*Trw = Tlw   (l:last; r:reference; w:world)
+    // set lastFrame Pose to world
+    mLastFrame.SetPose(Tlr * pRef->GetPose());
 
-    if(mnLastKeyFrameId==mLastFrame.mnId || mSensor==System::MONOCULAR)
+    // if lastFrame is KeyFrame or Mono
+    if(mnLastKeyFrameId == mLastFrame.mnId 
+        || mSensor == System::MONOCULAR)
         return;
 
     // Create "visual odometry" MapPoints
     // We sort points according to their measured depth by the stereo/RGB-D sensor
     vector<pair<float,int> > vDepthIdx;
     vDepthIdx.reserve(mLastFrame.N);
-    for(int i=0; i<mLastFrame.N;i++)
+    for(int i=0; i<mLastFrame.N; i++)
     {
         float z = mLastFrame.mvDepth[i];
         if(z>0)
@@ -829,10 +928,10 @@ void Tracking::UpdateLastFrame()
 
     sort(vDepthIdx.begin(),vDepthIdx.end());
 
-    // We insert all close points (depth<mThDepth)
+    // for RGBD and stereo We insert all close MapPoints (depth<mThDepth)
     // If less than 100 close points, we insert the 100 closest ones.
     int nPoints = 0;
-    for(size_t j=0; j<vDepthIdx.size();j++)
+    for(size_t j=0; j<vDepthIdx.size(); j++)
     {
         int i = vDepthIdx[j].second;
 
@@ -840,7 +939,9 @@ void Tracking::UpdateLastFrame()
 
         MapPoint* pMP = mLastFrame.mvpMapPoints[i];
         if(!pMP)
+        {
             bCreateNew = true;
+        }
         else if(pMP->Observations()<1)
         {
             bCreateNew = true;
@@ -849,9 +950,9 @@ void Tracking::UpdateLastFrame()
         if(bCreateNew)
         {
             cv::Mat x3D = mLastFrame.UnprojectStereo(i);
-            MapPoint* pNewMP = new MapPoint(x3D,mpMap,&mLastFrame,i);
+            MapPoint* pNewMP = new MapPoint(x3D, mpMap, &mLastFrame, i);
 
-            mLastFrame.mvpMapPoints[i]=pNewMP;
+            mLastFrame.mvpMapPoints[i] = pNewMP;
 
             mlpTemporalPoints.push_back(pNewMP);
             nPoints++;
@@ -861,36 +962,50 @@ void Tracking::UpdateLastFrame()
             nPoints++;
         }
 
-        if(vDepthIdx[j].first>mThDepth && nPoints>100)
+        if(vDepthIdx[j].first > mThDepth && nPoints>100)
             break;
     }
 }
 
+/*
+STEP 2(tracking)
+*/
 bool Tracking::TrackWithMotionModel()
 {
-    ORBmatcher matcher(0.9,true);
+    ORBmatcher matcher(0.9, true);
 
     // Update last frame pose according to its reference keyframe
-    // Create "visual odometry" points
+    // Create "visual odometry" MapPoints for RGBD and Stereo
     UpdateLastFrame();
 
-    mCurrentFrame.SetPose(mVelocity*mLastFrame.mTcw);
+    mCurrentFrame.SetPose(mVelocity * mLastFrame.mTcw);
 
-    fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
+    fill(mCurrentFrame.mvpMapPoints.begin(),
+         mCurrentFrame.mvpMapPoints.end(),
+         static_cast<MapPoint*>(NULL));
 
     // Project points seen in previous frame
     int th;
-    if(mSensor!=System::STEREO)
+    if(mSensor != System::STEREO)
         th=15;
     else
         th=7;
-    int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);
+    // Project MapPoints tracked in last frame into the current frame and search matches.
+    int nmatches = matcher.SearchByProjection(mCurrentFrame,
+                                              mLastFrame,
+                                              th,
+                                              mSensor==System::MONOCULAR);
 
     // If few matches, uses a wider window search
     if(nmatches<20)
     {
-        fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
-        nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR);
+        fill(mCurrentFrame.mvpMapPoints.begin(),
+             mCurrentFrame.mvpMapPoints.end(),
+             static_cast<MapPoint*>(NULL));
+        nmatches = matcher.SearchByProjection(mCurrentFrame,
+                                              mLastFrame,
+                                              2*th,
+                                              mSensor==System::MONOCULAR);
     }
 
     if(nmatches<20)
@@ -909,8 +1024,8 @@ bool Tracking::TrackWithMotionModel()
             {
                 MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
 
-                mCurrentFrame.mvpMapPoints[i]=static_cast<MapPoint*>(NULL);
-                mCurrentFrame.mvbOutlier[i]=false;
+                mCurrentFrame.mvpMapPoints[i] = static_cast<MapPoint*>(NULL);
+                mCurrentFrame.mvbOutlier[i] = false;
                 pMP->mbTrackInView = false;
                 pMP->mnLastFrameSeen = mCurrentFrame.mnId;
                 nmatches--;
@@ -1369,7 +1484,7 @@ bool Tracking::Relocalization()
 
     // We perform first an ORB matching with each candidate
     // If enough matches are found we setup a PnP solver
-    ORBmatcher matcher(0.75,true);
+    ORBmatcher matcher(0.75, true);
 
     vector<PnPsolver*> vpPnPsolvers;
     vpPnPsolvers.resize(nKFs);

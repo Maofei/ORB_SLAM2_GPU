@@ -41,8 +41,11 @@ Initializer::Initializer(const Frame &ReferenceFrame, float sigma, int iteration
     mMaxIterations = iterations;
 }
 
-bool Initializer::Initialize(const Frame &CurrentFrame, const vector<int> &vMatches12, cv::Mat &R21, cv::Mat &t21,
-                             vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated)
+bool Initializer::Initialize(const Frame &CurrentFrame, 
+                             const vector<int> &vMatches12, 
+                             cv::Mat &R21, cv::Mat &t21,
+                             vector<cv::Point3f> &vP3D, 
+                             vector<bool> &vbTriangulated)
 {
     // Fill structures with current keypoints and matches with reference frame
     // Reference Frame: 1, Current Frame: 2
@@ -570,7 +573,10 @@ bool Initializer::ReconstructF(vector<bool> &vbMatchesInliers, cv::Mat &F21, cv:
 }
 
 bool Initializer::ReconstructH(vector<bool> &vbMatchesInliers, cv::Mat &H21, cv::Mat &K,
-                      cv::Mat &R21, cv::Mat &t21, vector<cv::Point3f> &vP3D, vector<bool> &vbTriangulated, float minParallax, int minTriangulated)
+                               cv::Mat &R21, cv::Mat &t21, 
+                               vector<cv::Point3f> &vP3D, 
+                               vector<bool> &vbTriangulated, 
+                               float minParallax, int minTriangulated)
 {
     int N=0;
     for(size_t i=0, iend = vbMatchesInliers.size() ; i<iend; i++)

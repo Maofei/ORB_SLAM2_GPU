@@ -29,8 +29,13 @@ namespace ORB_SLAM2
 {
 
 LocalMapping::LocalMapping(Map *pMap, const float bMonocular):
-    mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), mbFinished(true), mpMap(pMap),
-    mbAbortBA(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true)
+    mbMonocular(bMonocular), 
+    mbResetRequested(false), 
+    mbFinishRequested(false), 
+    mbFinished(true), mpMap(pMap),
+    mbAbortBA(false), mbStopped(false), 
+    mbStopRequested(false), mbNotStop(false), 
+    mbAcceptKeyFrames(true)
 {
 }
 
@@ -52,12 +57,16 @@ void LocalMapping::Run()
     while(1)
     {
         // Tracking will see that Local Mapping is busy
+        // KeyFrames processing in LocalMapping are from Tracking
+        // So Tracking don't push too quick
         SetAcceptKeyFrames(false);
 
         // Check if there are keyframes in the queue
         if(CheckNewKeyFrames())
         {
             // BoW conversion and insertion in Map
+            // VI-A keyframe insertion
+            // 
             ProcessNewKeyFrame();
 
             // Check recent MapPoints
@@ -68,7 +77,8 @@ void LocalMapping::Run()
 
             if(!CheckNewKeyFrames())
             {
-                // Find more matches in neighbor keyframes and fuse point duplications
+                // Find more matches in neighbor keyframes 
+                // and fuse point duplications
                 SearchInNeighbors();
             }
 
@@ -78,7 +88,8 @@ void LocalMapping::Run()
             {
                 // Local BA
                 if(mpMap->KeyFramesInMap()>2)
-                    Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpMap);
+                    Optimizer::LocalBundleAdjustment(
+                        mpCurrentKeyFrame,&mbAbortBA, mpMap);
 
                 // Check redundant local Keyframes
                 KeyFrameCulling();
@@ -127,19 +138,20 @@ bool LocalMapping::CheckNewKeyFrames()
 
 void LocalMapping::ProcessNewKeyFrame()
 {
+    // get front KeyFrame in list
     {
         unique_lock<mutex> lock(mMutexNewKFs);
         mpCurrentKeyFrame = mlNewKeyFrames.front();
         mlNewKeyFrames.pop_front();
     }
 
-    // Compute Bags of Words structures
+    // Compute Bags of Words structures from KF
     mpCurrentKeyFrame->ComputeBoW();
 
     // Associate MapPoints to the new keyframe and update normal and descriptor
     const vector<MapPoint*> vpMapPointMatches = mpCurrentKeyFrame->GetMapPointMatches();
 
-    for(size_t i=0; i<vpMapPointMatches.size(); i++)
+    for(size_t i=0; i < vpMapPointMatches.size(); i++)
     {
         MapPoint* pMP = vpMapPointMatches[i];
         if(pMP)
@@ -593,8 +605,13 @@ void LocalMapping::Release()
         return;
     mbStopped = false;
     mbStopRequested = false;
-    for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), lend=mlNewKeyFrames.end(); lit!=lend; lit++)
+    for(list<KeyFrame*>::iterator lit = mlNewKeyFrames.begin(), 
+        lend=mlNewKeyFrames.end(); 
+        lit!=lend; 
+        lit++)
+    {
         delete *lit;
+    }
     mlNewKeyFrames.clear();
 
     cout << "Local Mapping RELEASE" << endl;
@@ -609,7 +626,7 @@ bool LocalMapping::AcceptKeyFrames()
 void LocalMapping::SetAcceptKeyFrames(bool flag)
 {
     unique_lock<mutex> lock(mMutexAccept);
-    mbAcceptKeyFrames=flag;
+    mbAcceptKeyFrames = flag;
 }
 
 bool LocalMapping::SetNotStop(bool flag)

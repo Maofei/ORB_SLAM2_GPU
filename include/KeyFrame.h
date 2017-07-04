@@ -62,8 +62,8 @@ public:
     void EraseConnection(KeyFrame* pKF);
     void UpdateConnections();
     void UpdateBestCovisibles();
-    std::set<KeyFrame *> GetConnectedKeyFrames();
-    std::vector<KeyFrame* > GetVectorCovisibleKeyFrames();
+    std::set<KeyFrame*> GetConnectedKeyFrames();
+    std::vector<KeyFrame*> GetVectorCovisibleKeyFrames();
     std::vector<KeyFrame*> GetBestCovisibilityKeyFrames(const int &N);
     std::vector<KeyFrame*> GetCovisiblesByWeight(const int &w);
     int GetWeight(KeyFrame* pKF);
