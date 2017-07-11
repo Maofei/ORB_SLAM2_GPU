@@ -91,7 +91,7 @@ void LoopClosing::Run()
 void LoopClosing::InsertKeyFrame(KeyFrame *pKF)
 {
     unique_lock<mutex> lock(mMutexLoopQueue);
-    if(pKF->mnId!=0)
+    if(pKF->mnId != 0)
         mlpLoopKeyFrameQueue.push_back(pKF);
 }
 

@@ -337,8 +337,8 @@ void MapPoint::UpdateNormalAndDepth()
         unique_lock<mutex> lock2(mMutexPos);
         if(mbBad)
             return;
-        observations=mObservations;
-        pRefKF=mpRefKF;
+        observations = mObservations;
+        pRefKF = mpRefKF;
         Pos = mWorldPos.clone();
     }
 
@@ -347,7 +347,10 @@ void MapPoint::UpdateNormalAndDepth()
 
     cv::Mat normal = cv::Mat::zeros(3,1,CV_32F);
     int n=0;
-    for(map<KeyFrame*,size_t>::iterator mit=observations.begin(), mend=observations.end(); mit!=mend; mit++)
+    for(map<KeyFrame*,size_t>::iterator mit = observations.begin(), 
+        mend = observations.end(); 
+        mit != mend; 
+        mit++)
     {
         KeyFrame* pKF = mit->first;
         cv::Mat Owi = pKF->GetCameraCenter();
@@ -364,9 +367,9 @@ void MapPoint::UpdateNormalAndDepth()
 
     {
         unique_lock<mutex> lock3(mMutexPos);
-        mfMaxDistance = dist*levelScaleFactor;
-        mfMinDistance = mfMaxDistance/pRefKF->mvScaleFactors[nLevels-1];
-        mNormalVector = normal/n;
+        mfMaxDistance = dist * levelScaleFactor;
+        mfMinDistance = mfMaxDistance / pRefKF->mvScaleFactors[nLevels-1];
+        mNormalVector = normal / n;
     }
 }
 

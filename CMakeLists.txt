@@ -51,6 +51,11 @@ LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 find_package(Eigen3 3.1.0 REQUIRED)
 find_package(Pangolin REQUIRED)
+# for map serilization
+find_package(Boost  1.54.0  	     # Minimum or EXACT version e.g. 1.36.0
+  REQUIRED             					# Fail with error if Boost is not found
+  COMPONENTS serialization 				# Boost libraries by their canonical name
+  )          
 
 include_directories(
     #/usr/local/include
@@ -171,6 +176,7 @@ ${Pangolin_LIBRARIES}
 ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
 ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 /usr/local/cuda-8.0/targets/aarch64-linux/lib/libnvToolsExt.so
+${Boost_LIBRARIES}
     #nvToolsExt
 )
 
