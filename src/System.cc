@@ -39,7 +39,8 @@ System::System(const string &strVocFile,
                const string &strSettingsFile,
                const eSensor sensor,
                const bool bUseViewer,
-               const bool bReuseMap)
+               const bool bReuseMap,
+               const string sMapName)
   : mSensor(sensor),
     mbReset(false),
     mbActivateLocalizationMode(bReuseMap),
@@ -106,7 +107,9 @@ System::System(const string &strVocFile,
     }
     else
 	{
-		LoadMap("Slam_Map.bin");
+        cout << "Loading Map ..." << endl;
+		LoadMap(sMapName);
+        cout << "Load Map Done" << endl;
         //mpKeyFrameDatabase->set_vocab(mpVocabulary);
 
         vector<ORB_SLAM2::KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();

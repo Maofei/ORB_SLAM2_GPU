@@ -13,6 +13,8 @@ Examples/ROS/ORB_SLAM2_GPU/Stereo
 Examples/ROS/ORB_SLAM2_GPU/tx1
 Examples/ROS/ORB_SLAM2_GPU/zed_stereo
 Examples/ROS/ORB_SLAM2_GPU/usb_mono
+Examples/ROS/ORB_SLAM2_GPU/launch/default_map.bin
+Examples/ROS/ORB_SLAM2_GPU/tx2
 
 Thirdparty/DBoW2/build/
 Thirdparty/g2o/build/

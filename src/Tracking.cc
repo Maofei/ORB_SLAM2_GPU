@@ -299,7 +299,7 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
                               mpORBVocabulary, mK, mDistCoef, mbf, mThDepth);
 
     Track();
-    /* Do Pose calculation */
+    /* Do Pose calculation for publish*/
     if(mState==OK && !mCurrentFrame.mTcw.empty() && mCurrentFrame.mpReferenceKF)
     {
         vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();

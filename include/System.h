@@ -67,7 +67,9 @@ public:
 	friend class boost::serialization::access;
 
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true, const bool bReuseMap = false);
+    System(const string &strVocFile, const string &strSettingsFile,
+           const eSensor sensor, const bool bUseViewer = true,
+           const bool bReuseMap = false, const string sMapName = "");
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.
