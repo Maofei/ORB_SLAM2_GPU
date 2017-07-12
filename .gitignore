@@ -18,6 +18,7 @@ Thirdparty/DBoW2/build/
 Thirdparty/g2o/build/
 Thirdparty/g2o/config.h
 Vocabulary/ORBvoc.txt
+Vocabulary/ORBvoc.txt.bin
 KeyFrameTrajectory.txt
 CameraTrajectory.txt
 

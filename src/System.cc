@@ -100,7 +100,7 @@ System::System(const string &strVocFile,
     mpKeyFrameDatabase = new KeyFrameDatabase(*mpVocabulary);
 
     //Create the Map
-    if (!bReuse)
+    if (!bReuseMap)
     {
         mpMap = new Map();
     }
